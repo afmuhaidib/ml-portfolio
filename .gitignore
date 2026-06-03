@@ -2,5 +2,5 @@
 .idea/
 __pycache__/
 *.pyc
-databases/db.csv
-databases/results.csv
+supervised-learning-class/spam-ham/databases/db.csv
+supervised-learning-class/spam-ham/databases/results.csv
