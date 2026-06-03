@@ -6,9 +6,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 # ── EDIT THESE ────────────────────────────────
-CSV      = '../databases/home_prices.csv'
-SEP      = ','
-FEATURES = ['sqft', 'bedrooms', 'bathrooms']  # input columns
+CSV = '../databases/house_dataset.csv'
+SEP      = ','  # ',' for comma, '\t' for tab
+FEATURES = ['bedrooms', 'bathrooms', 'sqft_living', 'floors']  # input columns
 TARGET   = 'price'                             # column to predict
 OUTPUT   = '../model/home_price_model.pkl'
 # ─────────────────────────────────────────────

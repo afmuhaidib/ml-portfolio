@@ -1,6 +1,17 @@
 .venv/
 .idea/
+.DS_Store
 __pycache__/
 *.pyc
-supervised-learning-class/spam-ham/databases/db.csv
-supervised-learning-class/spam-ham/databases/results.csv
+
+# large datasets
+supervised-learning/classification/spam-ham/databases/db.csv
+supervised-learning/classification/spam-ham/databases/results.csv
+financial/long-term/datasets/
+financial/scalping/datasets/
+core/datasets/
+
+# website runtime
+supervised-learning/regression/house-price/uploads/
+supervised-learning/regression/house-price/app.py
+supervised-learning/regression/house-price/templates/

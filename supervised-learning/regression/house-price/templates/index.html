@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APPRAISE — ML Price Predictor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #080a0e;
+    --surface: #0f1218;
+    --border:  #1e2430;
+    --mint:    #00e5a0;
+    --red:     #ff4d6d;
+    --text:    #e2e8f0;
+    --muted:   #4a5568;
+    --mono:    'IBM Plex Mono', monospace;
+    --sans:    'Syne', sans-serif;
+  }
+
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--mono); overflow-x: hidden; }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  header {
+    display: flex; align-items: baseline; gap: 16px;
+    margin-bottom: 48px; border-bottom: 1px solid var(--border); padding-bottom: 24px;
+  }
+  .logo { font-family: var(--sans); font-size: 28px; font-weight: 800; letter-spacing: -0.03em; color: var(--mint); }
+  .logo-sub { font-size: 11px; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; }
+  .step-indicator { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+  .step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: background 0.3s; }
+  .step-dot.active { background: var(--mint); }
+  .step-dot.done   { background: var(--muted); }
+
+  .panel {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 2px;
+    padding: 28px 32px; margin-bottom: 16px;
+    opacity: 0; transform: translateY(12px); transition: opacity 0.4s ease, transform 0.4s ease; display: none;
+  }
+  .panel.visible { display: block; opacity: 1; transform: translateY(0); }
+  #panel-upload { display: block; opacity: 1; transform: none; }
+
+  .panel-label {
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mint);
+    margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+  }
+  .panel-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* UPLOAD */
+  .drop-zone {
+    border: 1px dashed var(--border); border-radius: 2px; padding: 48px;
+    text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; position: relative;
+  }
+  .drop-zone:hover, .drop-zone.drag { border-color: var(--mint); background: rgba(0,229,160,0.03); }
+  .drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .drop-icon { font-size: 32px; margin-bottom: 12px; display: block; }
+  .drop-title { font-family: var(--sans); font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .drop-hint  { font-size: 11px; color: var(--muted); }
+
+  /* COLUMN MAPPING TABLE */
+  .map-table { width: 100%; border-collapse: collapse; }
+  .map-table th {
+    font-size: 10px; color: var(--mint); letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border);
+    background: rgba(0,229,160,0.04);
+  }
+  .map-table td { padding: 6px 12px; border-bottom: 1px solid var(--border); font-size: 12px; }
+  .map-table tr:last-child td { border-bottom: none; }
+  .map-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .map-table td:first-child { color: var(--muted); font-size: 11px; }
+
+  .map-table input[type=text] {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 2px;
+    color: var(--text); font-family: var(--mono); font-size: 12px;
+    padding: 5px 10px; width: 160px; outline: none; transition: border-color 0.2s;
+  }
+  .map-table input[type=text]:focus { border-color: var(--mint); }
+
+  .role-select {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 2px;
+    color: var(--text); font-family: var(--mono); font-size: 11px;
+    padding: 5px 10px; outline: none; cursor: pointer; transition: border-color 0.2s; appearance: none;
+  }
+  .role-select:focus { border-color: var(--mint); }
+  .role-select.is-target { border-color: var(--mint); color: var(--mint); }
+  .role-select.is-ignore { color: var(--muted); }
+
+  /* PREDICT INPUTS */
+  .inputs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .field label { display: block; font-size: 10px; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 6px; }
+  .field input {
+    width: 100%; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 2px; color: var(--text); font-family: var(--mono); font-size: 13px;
+    outline: none; transition: border-color 0.2s;
+  }
+  .field input:focus { border-color: var(--mint); }
+
+  /* RESULT */
+  .result-box {
+    background: var(--bg); border: 1px solid var(--mint); padding: 32px;
+    border-radius: 2px; margin-top: 20px; display: none;
+    animation: fadeUp 0.4s ease forwards;
+  }
+  .result-box.visible { display: block; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  .result-label { font-size: 10px; color: var(--mint); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 10px; }
+  .result-price { font-family: var(--sans); font-size: 56px; font-weight: 800; letter-spacing: -0.03em; }
+  .result-price .currency { color: var(--mint); }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; padding: 11px 24px;
+    border: 1px solid var(--mint); background: transparent; color: var(--mint);
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+    cursor: pointer; border-radius: 2px; transition: background 0.2s, color 0.2s;
+  }
+  .btn:hover { background: var(--mint); color: var(--bg); }
+  .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .btn:disabled:hover { background: transparent; color: var(--mint); }
+  .btn-full { width: 100%; justify-content: center; }
+
+  /* STATUS */
+  .status {
+    position: fixed; bottom: 24px; right: 24px; background: var(--surface);
+    border: 1px solid var(--border); padding: 10px 16px; font-size: 11px; color: var(--muted);
+    border-radius: 2px; max-width: 320px; transition: all 0.3s; opacity: 0; z-index: 100;
+  }
+  .status.show { opacity: 1; }
+  .status.error   { border-color: var(--red); color: var(--red); }
+  .status.success { border-color: var(--mint); color: var(--mint); }
+
+  .spinner { display: inline-block; width: 10px; height: 10px; border: 1px solid var(--muted); border-top-color: var(--mint); border-radius: 50%; animation: spin 0.6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <header>
+    <div>
+      <div class="logo">APPRAISE</div>
+      <div class="logo-sub">ML Price Predictor</div>
+    </div>
+    <div class="step-indicator">
+      <div class="step-dot active" id="dot-1"></div>
+      <div class="step-dot" id="dot-2"></div>
+      <div class="step-dot" id="dot-3"></div>
+    </div>
+  </header>
+
+  <!-- STEP 1: UPLOAD -->
+  <div class="panel visible" id="panel-upload">
+    <div class="panel-label">01 / Load Dataset</div>
+    <div class="drop-zone" id="drop-zone">
+      <input type="file" id="file-input" accept=".csv,.tsv">
+      <span class="drop-icon">⬡</span>
+      <div class="drop-title">Drop your CSV here</div>
+      <div class="drop-hint">or click to browse — .csv and .tsv supported</div>
+    </div>
+  </div>
+
+  <!-- STEP 2: COLUMN MAPPING -->
+  <div class="panel" id="panel-map">
+    <div class="panel-label">02 / Assign Columns</div>
+
+    <!-- only shown if price column not auto-detected -->
+    <div id="target-picker" class="hidden" style="margin-bottom:20px">
+      <div class="section-title" style="margin-bottom:8px">Which column is the price?</div>
+      <select class="role-select" id="target-select" style="width:100%;padding:10px 14px;font-size:13px"></select>
+    </div>
+
+    <div style="overflow-x:auto;border:1px solid var(--border)">
+      <table class="map-table">
+        <tr>
+          <th>CSV Column</th>
+          <th>Label</th>
+          <th style="width:80px;text-align:center">Use</th>
+        </tr>
+        <tbody id="map-rows"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:20px">
+      <button class="btn btn-full" id="btn-train">
+        <span id="train-spinner" class="spinner hidden"></span>
+        Train &amp; Continue
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 3: PREDICT -->
+  <div class="panel" id="panel-predict">
+    <div class="panel-label">03 / Predict Price</div>
+    <div class="inputs-grid" id="predict-inputs"></div>
+    <button class="btn btn-full" id="btn-predict">
+      <span id="predict-spinner" class="spinner hidden"></span>
+      Predict Price
+    </button>
+    <div class="result-box" id="result-box">
+      <div class="result-label">Estimated Price</div>
+      <div class="result-price"><span class="currency">$</span><span id="result-value">—</span></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="status" id="status"></div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  let columns = [], mapping = [];
+
+  function setStatus(msg, type = '') {
+    const s = $('status');
+    s.textContent = msg;
+    s.className = 'status show ' + type;
+    clearTimeout(s._t);
+    s._t = setTimeout(() => s.classList.remove('show'), 3500);
+  }
+
+  function showPanel(id) {
+    const p = $(id);
+    p.style.display = 'block';
+    requestAnimationFrame(() => p.classList.add('visible'));
+  }
+
+  function updateDots(step) {
+    ['dot-1','dot-2','dot-3'].forEach((id, i) => {
+      $(id).className = 'step-dot ' + (i+1 < step ? 'done' : i+1 === step ? 'active' : '');
+    });
+  }
+
+  // ── UPLOAD ──
+  const dropZone = $('drop-zone');
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
+  dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag'); handleFile(e.dataTransfer.files[0]); });
+  $('file-input').addEventListener('change', e => handleFile(e.target.files[0]));
+
+  async function handleFile(file) {
+    if (!file) return;
+    dropZone.querySelector('.drop-title').textContent = file.name;
+    dropZone.querySelector('.drop-hint').textContent  = 'Uploading…';
+
+    const fd = new FormData();
+    fd.append('file', file);
+    const res  = await fetch('/upload', { method: 'POST', body: fd });
+    const data = await res.json();
+
+    if (data.error) { setStatus(data.error, 'error'); return; }
+
+    columns = data.columns;
+    dropZone.querySelector('.drop-hint').textContent = `${columns.length} columns detected`;
+
+    buildMapTable(columns);
+    showPanel('panel-map');
+    updateDots(2);
+    setStatus('Dataset loaded — assign your columns', 'success');
+  }
+
+  let detectedTarget = null;
+
+  function buildMapTable(cols) {
+    detectedTarget = cols.find(c => /^price$|^cost$|^target$|^label$/i.test(c)) || null;
+
+    // show target picker only if not detected
+    const picker = $('target-picker');
+    if (!detectedTarget) {
+      picker.classList.remove('hidden');
+      const sel = $('target-select');
+      sel.innerHTML = cols.map(c => `<option value="${c}">${c}</option>`).join('');
+    } else {
+      picker.classList.add('hidden');
+    }
+
+    const tbody = $('map-rows');
+    tbody.innerHTML = '';
+    cols.forEach((col, i) => {
+      const isTarget = col === detectedTarget;
+      if (isTarget) return; // don't show target in the table
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${col}</td>
+        <td><input type="text" id="label-${i}" value="${col}"></td>
+        <td style="text-align:center">
+          <input type="checkbox" id="use-${i}" checked style="accent-color:var(--mint);width:14px;height:14px;cursor:pointer">
+        </td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ── TRAIN ──
+  $('btn-train').addEventListener('click', async () => {
+    const target = detectedTarget || $('target-select').value;
+
+    mapping = columns
+      .filter(col => col !== target)
+      .map((col, i) => {
+        const checked = $(`use-${i}`)?.checked ?? true;
+        return { col, label: $(`label-${i}`)?.value.trim() || col, use: checked };
+      });
+
+    const features = mapping.filter(m => m.use).map(m => m.col);
+    const targetMap = { col: target };
+
+    if (!features.length) { setStatus('Check at least one feature column', 'error'); return; }
+    if (!target)          { setStatus('Select the price column', 'error'); return; }
+
+    $('btn-train').disabled = true;
+    $('train-spinner').classList.remove('hidden');
+
+    const res  = await fetch('/train', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ features, target }),
+    });
+    const data = await res.json();
+
+    $('btn-train').disabled = false;
+    $('train-spinner').classList.add('hidden');
+
+    if (data.error) { setStatus(data.error, 'error'); return; }
+
+    buildPredictInputs(mapping.filter(m => m.use));
+    showPanel('panel-predict');
+    updateDots(3);
+    setStatus('Model ready — enter values to predict', 'success');
+  });
+
+  function buildPredictInputs(features) {
+    const grid = $('predict-inputs');
+    grid.innerHTML = '';
+    features.forEach(f => {
+      const div = document.createElement('div');
+      div.className = 'field';
+      div.innerHTML = `<label>${f.label}</label><input type="number" id="inp-${f.col}" placeholder="0">`;
+      grid.appendChild(div);
+    });
+    $('result-box').classList.remove('visible');
+  }
+
+  // ── PREDICT ──
+  $('btn-predict').addEventListener('click', async () => {
+    const features = mapping.filter(m => m.role === 'feature');
+    const payload  = {};
+
+    for (const f of features) {
+      const val = $(`inp-${f.col}`)?.value;
+      if (val === '' || val === null) { setStatus(`Enter a value for "${f.label}"`, 'error'); return; }
+      payload[f.col] = val;
+    }
+
+    $('btn-predict').disabled = true;
+    $('predict-spinner').classList.remove('hidden');
+
+    const res  = await fetch('/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+
+    $('btn-predict').disabled = false;
+    $('predict-spinner').classList.add('hidden');
+
+    if (data.error) { setStatus(data.error, 'error'); return; }
+
+    $('result-value').textContent = data.prediction.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    $('result-box').classList.add('visible');
+  });
+</script>
+</body>
+</html>
