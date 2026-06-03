@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGNAL — Algorithmic Stock Analysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #040608;
+    --bg2:       #080c10;
+    --panel:     #0b1018;
+    --border:    #1a2535;
+    --border2:   #243244;
+    --text:      #8fa3bc;
+    --text2:     #c4d4e5;
+    --dim:       #3d5166;
+    --buy:       #00e676;
+    --buy-glow:  rgba(0,230,118,0.18);
+    --sell:      #ff1744;
+    --sell-glow: rgba(255,23,68,0.18);
+    --hold:      #ffd600;
+    --hold-glow: rgba(255,214,0,0.14);
+    --accent:    #00b4d8;
+    --accent2:   #0077b6;
+    --mono:      'Share Tech Mono', monospace;
+    --display:   'Barlow Condensed', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text2);
+    font-family: var(--mono);
+    overflow-x: hidden;
+  }
+
+  /* ── grid background ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,180,216,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,180,216,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── scanline overlay ── */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 24px 80px;
+  }
+
+  /* ── header ── */
+  header {
+    width: 100%;
+    max-width: 820px;
+    margin-bottom: 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .logo-row {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+  }
+
+  .logo {
+    font-family: var(--display);
+    font-weight: 900;
+    font-size: 52px;
+    letter-spacing: 0.12em;
+    line-height: 1;
+    color: #fff;
+    text-transform: uppercase;
+  }
+
+  .logo span {
+    color: var(--accent);
+  }
+
+  .tagline {
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .header-line {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent2), transparent);
+    margin-top: 16px;
+    opacity: 0.5;
+  }
+
+  /* ── search ── */
+  .search-block {
+    width: 100%;
+    max-width: 820px;
+    margin-bottom: 52px;
+  }
+
+  .search-label {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .search-row {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border2);
+    background: var(--panel);
+    transition: border-color 0.2s;
+  }
+
+  .search-row:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent2), 0 0 24px rgba(0,180,216,0.08);
+  }
+
+  .ticker-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 16px 20px;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: 0.14em;
+    color: #fff;
+    text-transform: uppercase;
+    caret-color: var(--accent);
+  }
+
+  .ticker-input::placeholder {
+    color: var(--dim);
+    font-weight: 400;
+  }
+
+  .analyze-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 0 32px;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s;
+    flex-shrink: 0;
+  }
+
+  .analyze-btn:hover { background: #00d4f5; }
+  .analyze-btn:active { opacity: 0.8; }
+  .analyze-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── error ── */
+  .error-msg {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--sell);
+    letter-spacing: 0.08em;
+    min-height: 18px;
+  }
+
+  /* ── result panel ── */
+  #result {
+    width: 100%;
+    max-width: 820px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    pointer-events: none;
+  }
+
+  #result.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  /* ── ticker header inside result ── */
+  .result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .result-ticker {
+    font-family: var(--display);
+    font-weight: 900;
+    font-size: 42px;
+    letter-spacing: 0.1em;
+    color: #fff;
+    text-transform: uppercase;
+  }
+
+  .result-timestamp {
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0.18em;
+    text-align: right;
+    line-height: 1.6;
+  }
+
+  /* ── signal badge ── */
+  .signal-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .signal-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 36px;
+    font-family: var(--display);
+    font-weight: 900;
+    font-size: 36px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    border: 2px solid;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .signal-badge::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.07;
+  }
+
+  .signal-badge.BUY {
+    color: var(--buy);
+    border-color: var(--buy);
+    box-shadow: 0 0 32px var(--buy-glow), inset 0 0 24px var(--buy-glow);
+    animation: pulse-buy 2.4s ease-in-out infinite;
+  }
+
+  .signal-badge.BUY::before { background: var(--buy); }
+
+  .signal-badge.SELL {
+    color: var(--sell);
+    border-color: var(--sell);
+    box-shadow: 0 0 32px var(--sell-glow), inset 0 0 24px var(--sell-glow);
+    animation: pulse-sell 2.4s ease-in-out infinite;
+  }
+
+  .signal-badge.SELL::before { background: var(--sell); }
+
+  .signal-badge.HOLD {
+    color: var(--hold);
+    border-color: var(--hold);
+    box-shadow: 0 0 24px var(--hold-glow), inset 0 0 16px var(--hold-glow);
+  }
+
+  .signal-badge.HOLD::before { background: var(--hold); }
+
+  @keyframes pulse-buy {
+    0%, 100% { box-shadow: 0 0 32px var(--buy-glow), inset 0 0 24px var(--buy-glow); }
+    50%       { box-shadow: 0 0 56px rgba(0,230,118,0.32), inset 0 0 40px rgba(0,230,118,0.14); }
+  }
+  @keyframes pulse-sell {
+    0%, 100% { box-shadow: 0 0 32px var(--sell-glow), inset 0 0 24px var(--sell-glow); }
+    50%       { box-shadow: 0 0 56px rgba(255,23,68,0.32), inset 0 0 40px rgba(255,23,68,0.12); }
+  }
+
+  .upside-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .upside-number {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 38px;
+    line-height: 1;
+    letter-spacing: 0.04em;
+  }
+
+  .upside-number.positive { color: var(--buy); }
+  .upside-number.negative { color: var(--sell); }
+  .upside-number.neutral  { color: var(--hold); }
+
+  .upside-sub {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--dim);
+    text-transform: uppercase;
+  }
+
+  /* ── data grid ── */
+  .data-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .data-cell {
+    background: var(--panel);
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.2s;
+  }
+
+  .data-cell:hover { background: #0e1621; }
+
+  .data-cell::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent2);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .data-cell:hover::after { opacity: 1; }
+
+  .cell-label {
+    font-size: 9px;
+    letter-spacing: 0.28em;
+    color: var(--dim);
+    text-transform: uppercase;
+  }
+
+  .cell-value {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 30px;
+    color: #fff;
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+
+  .cell-sub {
+    font-size: 10px;
+    color: var(--text);
+    letter-spacing: 0.1em;
+  }
+
+  /* ── footnote ── */
+  .footnote {
+    margin-top: 20px;
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0.1em;
+    line-height: 1.6;
+    border-left: 2px solid var(--border2);
+    padding-left: 12px;
+  }
+
+  /* ── loading ── */
+  .loader {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-top: 12px;
+  }
+
+  .loader.active { display: flex; }
+
+  .loader-dots span {
+    display: inline-block;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: blink 1.2s ease-in-out infinite;
+  }
+
+  .loader-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loader-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes blink {
+    0%, 80%, 100% { opacity: 0.15; transform: scale(0.8); }
+    40%            { opacity: 1;    transform: scale(1.2); }
+  }
+
+  /* ── page entrance ── */
+  .fade-in { animation: fadeUp 0.7s ease both; }
+  .fade-in-2 { animation: fadeUp 0.7s 0.12s ease both; }
+  .fade-in-3 { animation: fadeUp 0.7s 0.24s ease both; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── counter animation ── */
+  @keyframes countIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .cell-value { animation: countIn 0.4s ease both; }
+
+  /* ── responsive ── */
+  @media (max-width: 600px) {
+    .logo { font-size: 36px; }
+    .data-grid { grid-template-columns: 1fr 1fr; }
+    .signal-badge { font-size: 26px; padding: 10px 24px; }
+    .upside-number { font-size: 28px; }
+    .result-ticker { font-size: 30px; }
+    .cell-value { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="fade-in">
+    <div class="logo-row">
+      <div class="logo">SIG<span>NAL</span></div>
+    </div>
+    <div class="tagline">Algorithmic Long-Term Equity Analysis &nbsp;·&nbsp; ML-Driven Signals</div>
+    <div class="header-line"></div>
+  </header>
+
+  <div class="search-block fade-in-2">
+    <label class="search-label" for="tickerInput">Enter ticker symbol</label>
+    <div class="search-row">
+      <input
+        id="tickerInput"
+        class="ticker-input"
+        type="text"
+        placeholder="AAPL"
+        maxlength="10"
+        autocomplete="off"
+        spellcheck="false"
+      >
+      <button class="analyze-btn" id="analyzeBtn">Analyze</button>
+    </div>
+    <div class="loader" id="loader">
+      <div class="loader-dots"><span></span><span></span><span></span></div>
+      <span>Fetching fundamentals</span>
+    </div>
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <div id="result" class="fade-in-3">
+    <div class="result-header">
+      <div class="result-ticker" id="resTicker">—</div>
+      <div class="result-timestamp" id="resTimestamp"></div>
+    </div>
+
+    <div class="signal-row">
+      <div class="signal-badge" id="resSignal">—</div>
+      <div class="upside-label">
+        <div class="upside-number" id="resUpside">—</div>
+        <div class="upside-sub">12-Month Projected Return</div>
+      </div>
+    </div>
+
+    <div class="data-grid">
+      <div class="data-cell">
+        <div class="cell-label">Current Price</div>
+        <div class="cell-value" id="resCurrent">—</div>
+        <div class="cell-sub">Market close</div>
+      </div>
+      <div class="data-cell">
+        <div class="cell-label">Predicted Price</div>
+        <div class="cell-value" id="resPredicted">—</div>
+        <div class="cell-sub">12-month forecast</div>
+      </div>
+      <div class="data-cell">
+        <div class="cell-label">Fair Value</div>
+        <div class="cell-value" id="resFair">—</div>
+        <div class="cell-sub">Forward earnings model</div>
+      </div>
+    </div>
+
+    <div class="footnote">
+      Model trained on S&P 500 fundamentals · 12-month horizon · Directional accuracy ~70.7% ·
+      Not financial advice. Past performance does not guarantee future results.
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const input     = document.getElementById('tickerInput');
+  const btn       = document.getElementById('analyzeBtn');
+  const loader    = document.getElementById('loader');
+  const errorMsg  = document.getElementById('errorMsg');
+  const result    = document.getElementById('result');
+
+  async function analyze() {
+    const ticker = input.value.trim().toUpperCase();
+    if (!ticker) { shake(input); return; }
+
+    errorMsg.textContent = '';
+    result.classList.remove('visible');
+    loader.classList.add('active');
+    btn.disabled = true;
+
+    try {
+      const res  = await fetch('/analyze', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ ticker }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || 'Unknown error');
+      render(data);
+    } catch (e) {
+      errorMsg.textContent = '⚠ ' + e.message;
+    } finally {
+      loader.classList.remove('active');
+      btn.disabled = false;
+    }
+  }
+
+  function fmt(n) {
+    return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function render(d) {
+    document.getElementById('resTicker').textContent   = d.ticker;
+    document.getElementById('resCurrent').textContent  = fmt(d.current_price);
+    document.getElementById('resPredicted').textContent = fmt(d.predicted_price);
+    document.getElementById('resFair').textContent     = fmt(d.fair_value);
+
+    const signalEl  = document.getElementById('resSignal');
+    signalEl.textContent = d.signal;
+    signalEl.className = 'signal-badge ' + d.signal;
+
+    const upsideEl = document.getElementById('resUpside');
+    const sign     = d.upside_pct >= 0 ? '+' : '';
+    upsideEl.textContent = sign + d.upside_pct.toFixed(1) + '%';
+    upsideEl.className = 'upside-number ' + (d.upside_pct > 5 ? 'positive' : d.upside_pct < -3 ? 'negative' : 'neutral');
+
+    const now = new Date();
+    document.getElementById('resTimestamp').innerHTML =
+      now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + '<br>' +
+      now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    // force re-animation on data cells
+    document.querySelectorAll('.cell-value').forEach(el => {
+      el.style.animation = 'none';
+      el.offsetHeight;
+      el.style.animation = '';
+    });
+
+    result.classList.add('visible');
+  }
+
+  function shake(el) {
+    el.style.animation = 'none';
+    el.offsetHeight;
+    el.style.animation = 'shake 0.35s ease';
+  }
+
+  // add shake keyframe
+  const s = document.createElement('style');
+  s.textContent = '@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 60%{transform:translateX(6px)} }';
+  document.head.appendChild(s);
+
+  btn.addEventListener('click', analyze);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') analyze(); });
+</script>
+</body>
+</html>
