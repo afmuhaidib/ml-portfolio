@@ -15,3 +15,8 @@ core/datasets/
 supervised-learning/regression/house-price/uploads/
 supervised-learning/regression/house-price/app.py
 supervised-learning/regression/house-price/templates/
+
+# large files (>50MB)
+supervised-learning/regression/house-worker/datasets/workers.csv
+supervised-learning/classification/health-lab/datasets/synthetic_patients.csv
+supervised-learning/classification/diabetes/model/diabetes-model.pkl

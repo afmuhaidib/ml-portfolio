@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diabetes Risk Predictor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #f0f3f2;
+    --surface:   #ffffff;
+    --surface2:  #f7f9f8;
+    --border:    #dde5e2;
+    --teal:      #0b6b6b;
+    --teal2:     #0e8585;
+    --cyan:      #00b8a9;
+    --cyan-dim:  rgba(0,184,169,0.12);
+    --text:      #1a2420;
+    --muted:     #6b7c78;
+    --green:     #16a34a;
+    --green-bg:  #f0fdf4;
+    --amber:     #d97706;
+    --amber-bg:  #fffbeb;
+    --red:       #dc2626;
+    --red-bg:    #fef2f2;
+    --shadow:    0 1px 3px rgba(11,107,107,0.08), 0 8px 24px rgba(11,107,107,0.06);
+    --shadow-lg: 0 4px 6px rgba(11,107,107,0.06), 0 16px 48px rgba(11,107,107,0.12);
+    --radius:    14px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+    background-image:
+      radial-gradient(circle at 20% 0%, rgba(0,184,169,0.07) 0%, transparent 50%),
+      radial-gradient(circle at 80% 100%, rgba(11,107,107,0.05) 0%, transparent 50%);
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 48px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    height: 68px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+    background: rgba(255,255,255,0.92);
+  }
+  .logo-mark {
+    width: 36px; height: 36px;
+    background: var(--teal);
+    border-radius: 10px;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .logo-mark svg { width: 20px; height: 20px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; }
+  .logo-text { font-family: 'Instrument Serif', serif; font-size: 1.2rem; color: var(--teal); letter-spacing: -0.01em; }
+  .logo-sub  { font-size: 0.72rem; color: var(--muted); font-weight: 400; margin-left: auto; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  /* ── LAYOUT ── */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 32px;
+    align-items: start;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    grid-column: 1 / -1;
+    padding: 0 0 8px;
+    animation: fadeUp 0.6s ease both;
+  }
+  .hero h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 2.8rem;
+    font-weight: 400;
+    color: var(--teal);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+  .hero h1 em { font-style: italic; color: var(--cyan); }
+  .hero p { color: var(--muted); margin-top: 10px; font-size: 0.95rem; max-width: 500px; }
+
+  /* ── FORM CARD ── */
+  .form-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+  .section-header {
+    padding: 20px 28px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-header .dot {
+    width: 8px; height: 8px;
+    background: var(--cyan);
+    border-radius: 50%;
+  }
+  .section-header h2 {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--teal);
+  }
+  .form-body { padding: 24px 28px; }
+
+  /* ── GROUPS ── */
+  .form-group + .form-group { margin-top: 28px; }
+  .group-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  /* ── TOGGLES ── */
+  .toggle-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .toggle-item { position: relative; }
+  .toggle-item input[type="checkbox"] { position: absolute; opacity: 0; width: 0; height: 0; }
+  .toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .toggle-btn .pill {
+    width: 32px; height: 18px;
+    background: #d1d9d6;
+    border-radius: 9px;
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  .toggle-btn .pill::after {
+    content: '';
+    position: absolute;
+    width: 12px; height: 12px;
+    background: white;
+    border-radius: 50%;
+    top: 3px; left: 3px;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+  .toggle-item input:checked + .toggle-btn {
+    background: var(--cyan-dim);
+    border-color: var(--cyan);
+    color: var(--teal);
+  }
+  .toggle-item input:checked + .toggle-btn .pill { background: var(--cyan); }
+  .toggle-item input:checked + .toggle-btn .pill::after { transform: translateX(14px); }
+  .toggle-btn:hover { border-color: var(--teal2); }
+  .toggle-label { flex: 1; line-height: 1.3; }
+  .toggle-label .off-label,
+  .toggle-label .on-label  { display: block; font-size: 0.72rem; }
+  .toggle-label .off-label { display: block; }
+  .toggle-label .on-label  { display: none; color: var(--teal); }
+  .toggle-item input:checked + .toggle-btn .off-label { display: none; }
+  .toggle-item input:checked + .toggle-btn .on-label  { display: block; }
+
+  /* ── BMI INPUT ── */
+  .bmi-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .bmi-input {
+    width: 120px;
+    padding: 12px 16px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--teal);
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    outline: none;
+    transition: border-color 0.2s;
+    text-align: center;
+  }
+  .bmi-input:focus { border-color: var(--cyan); }
+  .bmi-scale {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .bmi-bar-wrap {
+    height: 6px;
+    background: linear-gradient(to right, #22c55e 0%, #22c55e 30%, #eab308 30%, #eab308 55%, #f97316 55%, #f97316 75%, #dc2626 75%);
+    border-radius: 3px;
+    position: relative;
+  }
+  .bmi-cursor {
+    position: absolute;
+    width: 12px; height: 12px;
+    background: white;
+    border: 2px solid var(--teal);
+    border-radius: 50%;
+    top: -3px;
+    transform: translateX(-50%);
+    transition: left 0.2s;
+  }
+  .bmi-labels { display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--muted); }
+
+  /* ── SLIDERS ── */
+  .slider-wrap { display: flex; flex-direction: column; gap: 10px; }
+  .slider-row  { display: flex; align-items: center; gap: 14px; }
+  .slider-meta { display: flex; justify-content: space-between; align-items: center; }
+  .slider-name { font-size: 0.85rem; font-weight: 500; color: var(--text); }
+  .slider-val  {
+    font-size: 0.85rem; font-weight: 700;
+    color: var(--teal);
+    background: var(--cyan-dim);
+    padding: 2px 10px;
+    border-radius: 6px;
+    min-width: 80px;
+    text-align: center;
+  }
+  input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 5px;
+    background: var(--border);
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    background: var(--teal);
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 0 0 2px var(--teal), 0 2px 8px rgba(11,107,107,0.3);
+    transition: transform 0.15s;
+  }
+  input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.2); }
+
+  /* ── SUBMIT ── */
+  .submit-row {
+    padding: 20px 28px 24px;
+    border-top: 1px solid var(--border);
+  }
+  .btn-predict {
+    width: 100%;
+    padding: 16px;
+    background: var(--teal);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-predict::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%);
+  }
+  .btn-predict:hover { background: var(--teal2); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(11,107,107,0.3); }
+  .btn-predict:active { transform: translateY(0); }
+  .btn-predict.loading .btn-text { opacity: 0; }
+  .btn-predict.loading::after {
+    content: '';
+    position: absolute;
+    width: 20px; height: 20px;
+    border: 2.5px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  /* ── RESULT PANEL ── */
+  .result-panel {
+    position: sticky;
+    top: 88px;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+  .result-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: all 0.4s ease;
+  }
+  .result-placeholder {
+    padding: 48px 28px;
+    text-align: center;
+    color: var(--muted);
+  }
+  .result-placeholder svg {
+    width: 56px; height: 56px;
+    stroke: var(--border);
+    margin-bottom: 16px;
+  }
+  .result-placeholder p { font-size: 0.9rem; }
+
+  .result-content { display: none; }
+  .result-content.visible { display: block; animation: fadeUp 0.4s ease both; }
+
+  .risk-header {
+    padding: 32px 28px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .risk-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.06;
+    background: radial-gradient(circle at 50% 0%, currentColor 0%, transparent 70%);
+  }
+  .risk-icon {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 2rem;
+    position: relative;
+  }
+  .risk-label-text {
+    font-family: 'Instrument Serif', serif;
+    font-size: 1.8rem;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .risk-confidence {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+  .risk-confidence strong { font-weight: 700; font-size: 1rem; }
+
+  /* Result colors */
+  .risk-0 .risk-icon  { background: #dcfce7; color: var(--green); }
+  .risk-0 .risk-label-text { color: var(--green); }
+  .risk-1 .risk-icon  { background: #fef3c7; color: var(--amber); }
+  .risk-1 .risk-label-text { color: var(--amber); }
+  .risk-2 .risk-icon  { background: #fee2e2; color: var(--red); }
+  .risk-2 .risk-label-text { color: var(--red); }
+
+  /* Probability bars */
+  .prob-section { padding: 0 28px 24px; }
+  .prob-title { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+  .prob-row { margin-bottom: 12px; }
+  .prob-meta { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.82rem; }
+  .prob-name { font-weight: 500; }
+  .prob-pct  { font-weight: 700; }
+  .prob-bar-bg {
+    height: 6px;
+    background: var(--bg);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .prob-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+  }
+  .fill-green { background: var(--green); }
+  .fill-amber { background: var(--amber); }
+  .fill-red   { background: var(--red); }
+
+  /* Tip */
+  .tip-box {
+    margin: 0 28px 28px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    border-left: 3px solid;
+  }
+  .tip-0 { background: var(--green-bg); border-color: var(--green); color: #166534; }
+  .tip-1 { background: var(--amber-bg); border-color: var(--amber); color: #92400e; }
+  .tip-2 { background: var(--red-bg);   border-color: var(--red);   color: #991b1b; }
+
+  /* Info card */
+  .info-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    padding: 20px 24px;
+    margin-top: 16px;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+  .info-card h3 {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-name { font-size: 0.82rem; color: var(--muted); }
+  .stat-val  { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+  .badge-green { background: #dcfce7; color: var(--green); }
+  .badge-amber { background: #fef3c7; color: var(--amber); }
+  .badge-red   { background: #fee2e2; color: var(--red); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes pulse-ring {
+    0%   { box-shadow: 0 0 0 0 currentColor; }
+    70%  { box-shadow: 0 0 0 12px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+  .risk-icon { animation: pulse-ring 2s ease-out infinite; }
+
+  @media (max-width: 900px) {
+    .container { grid-template-columns: 1fr; }
+    .result-panel { position: static; }
+    .hero h1 { font-size: 2rem; }
+    header { padding: 0 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">
+    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+  </div>
+  <span class="logo-text">GlucoSense</span>
+  <span class="logo-sub">Diabetes Risk Assessment · ML Model</span>
+</header>
+
+<div class="container">
+  <div class="hero">
+    <h1>Assess your <em>diabetes</em><br>risk profile.</h1>
+    <p>Enter your health indicators below. Our machine learning model analyzes 14 biomarkers to estimate your diabetes risk across three categories.</p>
+  </div>
+
+  <!-- FORM -->
+  <div class="form-col">
+    <form id="riskForm">
+      <!-- CARDIOVASCULAR SECTION -->
+      <div class="form-card">
+        <div class="section-header">
+          <span class="dot"></span>
+          <h2>Cardiovascular &amp; Lifestyle</h2>
+        </div>
+        <div class="form-body">
+          <div class="form-group">
+            <div class="group-label">Blood &amp; Heart Conditions</div>
+            <div class="toggle-grid">
+
+              <div class="toggle-item">
+                <input type="checkbox" id="HighBP" name="HighBP">
+                <label class="toggle-btn" for="HighBP">
+                  <span class="pill"></span>
+                  <span class="toggle-label">
+                    <span class="off-label">Blood Pressure Normal</span>
+                    <span class="on-label">High Blood Pressure</span>
+                  </span>
+                </label>
+              </div>
+
+              <div class="toggle-item">
+                <input type="checkbox" id="HighChol" name="HighChol">
+                <label class="toggle-btn" for="HighChol">
+                  <span class="pill"></span>
+                  <span class="toggle-label">
+                    <span class="off-label">Cholesterol Normal</span>
+                    <span class="on-label">High Cholesterol</span>
+                  </span>
+                </label>
+              </div>
+
+              <div class="toggle-item">
+                <input type="checkbox" id="Stroke" name="Stroke">
+                <label class="toggle-btn" for="Stroke">
+                  <span class="pill"></span>
+                  <span class="toggle-label">
+                    <span class="off-label">No Stroke History</span>
+                    <span class="on-label">Had Stroke</span>
+                  </span>
+                </label>
+              </div>
+
+              <div class="toggle-item">
+                <input type="checkbox" id="HeartDiseaseorAttack" name="HeartDiseaseorAttack">
+                <label class="toggle-btn" for="HeartDiseaseorAttack">
+                  <span class="pill"></span>
+                  <span class="toggle-label">
+                    <span class="off-label">No Heart Disease</span>
+                    <span class="on-label">Heart Disease / Attack</span>
+                  </span>
+                </label>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="group-label">Lifestyle Factors</div>
+            <div class="toggle-grid">
+
+              <div class="toggle-item">
+                <input type="checkbox" id="Smoker" name="Smoker">
+                <label class="toggle-btn" for="Smoker">
+                  <span class="pill"></span>
+                  <span class="toggle-label">
+                    <span class="off-label">Non-Smoker</span>
+                    <span class="on-label">Smoker</span>
+                  </span>
+                </label>
+              </div>
+
+              <div class="toggle-item">
+                <input type="checkbox" id="PhysActivity" name="PhysActivity">
+                <label class="toggle-btn" for="PhysActivity">
+                  <span class="pill"></span>
+                  <span class="toggle-label">
+                    <span class="off-label">Inactive</span>
+                    <span class="on-label">Physically Active</span>
+                  </span>
+                </label>
+              </div>
+
+              <div class="toggle-item">
+                <input type="checkbox" id="HvyAlcoholConsump" name="HvyAlcoholConsump">
+                <label class="toggle-btn" for="HvyAlcoholConsump">
+                  <span class="pill"></span>
+                  <span class="toggle-label">
+                    <span class="off-label">Moderate / No Alcohol</span>
+                    <span class="on-label">Heavy Alcohol Use</span>
+                  </span>
+                </label>
+              </div>
+
+              <div class="toggle-item">
+                <input type="checkbox" id="DiffWalk" name="DiffWalk">
+                <label class="toggle-btn" for="DiffWalk">
+                  <span class="pill"></span>
+                  <span class="toggle-label">
+                    <span class="off-label">No Difficulty Walking</span>
+                    <span class="on-label">Difficulty Walking</span>
+                  </span>
+                </label>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- BMI -->
+          <div class="form-group">
+            <div class="group-label">Body Mass Index (BMI)</div>
+            <div class="bmi-wrap">
+              <input type="number" class="bmi-input" id="BMI" name="BMI"
+                     min="10" max="60" step="0.1" value="24.0" required>
+              <div class="bmi-scale">
+                <div class="bmi-bar-wrap">
+                  <div class="bmi-cursor" id="bmiCursor"></div>
+                </div>
+                <div class="bmi-labels">
+                  <span>10</span><span>Underweight</span><span>Normal</span><span>Obese</span><span>60</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DEMOGRAPHICS & HEALTH -->
+      <div class="form-card" style="margin-top: 20px;">
+        <div class="section-header">
+          <span class="dot"></span>
+          <h2>Demographics &amp; General Health</h2>
+        </div>
+        <div class="form-body">
+
+          <!-- Sex -->
+          <div class="form-group">
+            <div class="group-label">Biological Sex</div>
+            <div class="toggle-grid" style="grid-template-columns: 1fr 1fr;">
+              <div class="toggle-item">
+                <input type="checkbox" id="Sex" name="Sex">
+                <label class="toggle-btn" for="Sex">
+                  <span class="pill"></span>
+                  <span class="toggle-label">
+                    <span class="off-label">Female</span>
+                    <span class="on-label">Male</span>
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Age Slider -->
+          <div class="form-group">
+            <div class="group-label">Age Group</div>
+            <div class="slider-wrap">
+              <div class="slider-meta">
+                <span class="slider-name">Age Range</span>
+                <span class="slider-val" id="ageVal">50–54</span>
+              </div>
+              <div class="slider-row">
+                <input type="range" id="Age" name="Age" min="1" max="13" value="7">
+              </div>
+            </div>
+          </div>
+
+          <!-- General Health Slider -->
+          <div class="form-group">
+            <div class="group-label">Subjective Health Ratings</div>
+            <div class="slider-wrap">
+              <div class="slider-meta">
+                <span class="slider-name">General Health</span>
+                <span class="slider-val" id="genHlthVal">Good</span>
+              </div>
+              <div class="slider-row">
+                <input type="range" id="GenHlth" name="GenHlth" min="1" max="5" value="3">
+              </div>
+
+              <div class="slider-meta" style="margin-top: 10px;">
+                <span class="slider-name">Poor Mental Health Days <span style="color:var(--muted);font-weight:400">(past month)</span></span>
+                <span class="slider-val" id="mentHlthVal">0 days</span>
+              </div>
+              <div class="slider-row">
+                <input type="range" id="MentHlth" name="MentHlth" min="0" max="30" value="0">
+              </div>
+
+              <div class="slider-meta" style="margin-top: 10px;">
+                <span class="slider-name">Poor Physical Health Days <span style="color:var(--muted);font-weight:400">(past month)</span></span>
+                <span class="slider-val" id="physHlthVal">0 days</span>
+              </div>
+              <div class="slider-row">
+                <input type="range" id="PhysHlth" name="PhysHlth" min="0" max="30" value="0">
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="submit-row">
+          <button type="submit" class="btn-predict" id="submitBtn">
+            <span class="btn-text">Analyze Risk Profile</span>
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- RESULT PANEL -->
+  <div class="result-panel">
+    <div class="result-card" id="resultCard">
+      <div class="result-placeholder" id="resultPlaceholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 8v4l3 3"/>
+        </svg>
+        <p>Complete the form and click<br><strong>Analyze Risk Profile</strong></p>
+      </div>
+      <div class="result-content" id="resultContent">
+        <div class="risk-header" id="riskHeader">
+          <div class="risk-icon" id="riskIcon"></div>
+          <div class="risk-label-text" id="riskLabel"></div>
+          <div class="risk-confidence" id="riskConf"></div>
+        </div>
+        <div class="prob-section">
+          <div class="prob-title">Probability Breakdown</div>
+          <div class="prob-row" id="prob0">
+            <div class="prob-meta">
+              <span class="prob-name">No Diabetes</span>
+              <span class="prob-pct" id="pct0">—</span>
+            </div>
+            <div class="prob-bar-bg"><div class="prob-bar-fill fill-green" id="bar0"></div></div>
+          </div>
+          <div class="prob-row" id="prob1">
+            <div class="prob-meta">
+              <span class="prob-name">Pre-Diabetes</span>
+              <span class="prob-pct" id="pct1">—</span>
+            </div>
+            <div class="prob-bar-bg"><div class="prob-bar-fill fill-amber" id="bar1"></div></div>
+          </div>
+          <div class="prob-row" id="prob2">
+            <div class="prob-meta">
+              <span class="prob-name">Diabetes</span>
+              <span class="prob-pct" id="pct2">—</span>
+            </div>
+            <div class="prob-bar-bg"><div class="prob-bar-fill fill-red" id="bar2"></div></div>
+          </div>
+        </div>
+        <div class="tip-box" id="tipBox"></div>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <h3>Model Info</h3>
+      <div class="stat-row">
+        <span class="stat-name">Algorithm</span>
+        <span class="stat-val">Random Forest</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-name">Features</span>
+        <span class="stat-val">14 biomarkers</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-name">Classes</span>
+        <span class="stat-val">3 (0 / Pre / Diabetic)</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-name">Disclaimer</span>
+        <span class="stat-val" style="font-size:0.75rem;color:var(--muted)">Not a medical diagnosis</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const AGE_LABELS = {
+    1:'18–24', 2:'25–29', 3:'30–34', 4:'35–39',
+    5:'40–44', 6:'45–49', 7:'50–54', 8:'55–59',
+    9:'60–64', 10:'65–69', 11:'70–74', 12:'75–79', 13:'80+'
+  };
+  const GEN_LABELS = {1:'Excellent',2:'Very Good',3:'Good',4:'Fair',5:'Poor'};
+
+  const TIPS = {
+    0: "Great news — your profile shows low diabetes risk. Maintain your healthy habits: stay active, eat balanced meals, and schedule regular check-ups.",
+    1: "Your profile suggests pre-diabetes risk. Small lifestyle changes can make a big difference — regular exercise, reduced sugar intake, and weight management can reverse pre-diabetes.",
+    2: "Your profile indicates elevated diabetes risk. We strongly recommend consulting a healthcare professional for proper screening and personalized guidance."
+  };
+  const ICONS = { 0: '✓', 1: '⚠', 2: '!' };
+
+  // Slider live updates
+  document.getElementById('Age').addEventListener('input', e =>
+    document.getElementById('ageVal').textContent = AGE_LABELS[e.target.value]);
+  document.getElementById('GenHlth').addEventListener('input', e =>
+    document.getElementById('genHlthVal').textContent = GEN_LABELS[e.target.value]);
+  document.getElementById('MentHlth').addEventListener('input', e =>
+    document.getElementById('mentHlthVal').textContent = e.target.value + ' days');
+  document.getElementById('PhysHlth').addEventListener('input', e =>
+    document.getElementById('physHlthVal').textContent = e.target.value + ' days');
+
+  // BMI cursor
+  function updateBMI() {
+    const val = parseFloat(document.getElementById('BMI').value) || 24;
+    const pct = Math.max(0, Math.min(100, (val - 10) / 50 * 100));
+    document.getElementById('bmiCursor').style.left = pct + '%';
+  }
+  document.getElementById('BMI').addEventListener('input', updateBMI);
+  updateBMI();
+
+  // Form submit
+  document.getElementById('riskForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    const payload = {};
+    ['HighBP','HighChol','Smoker','Stroke','HeartDiseaseorAttack',
+     'PhysActivity','HvyAlcoholConsump','DiffWalk','Sex'].forEach(id => {
+      payload[id] = document.getElementById(id).checked ? 1 : 0;
+    });
+    payload.BMI      = parseFloat(document.getElementById('BMI').value);
+    payload.GenHlth  = parseInt(document.getElementById('GenHlth').value);
+    payload.MentHlth = parseInt(document.getElementById('MentHlth').value);
+    payload.PhysHlth = parseInt(document.getElementById('PhysHlth').value);
+    payload.Age      = parseInt(document.getElementById('Age').value);
+
+    try {
+      const res  = await fetch('/predict', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      const data = await res.json();
+      showResult(data);
+    } catch(err) {
+      alert('Server error. Is the Flask app running?');
+    } finally {
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    }
+  });
+
+  function showResult(data) {
+    const p = data.prediction;
+    document.getElementById('resultPlaceholder').style.display = 'none';
+    const content = document.getElementById('resultContent');
+    content.className = 'result-content visible';
+
+    // Risk header class
+    const header = document.getElementById('riskHeader');
+    header.className = 'risk-header risk-' + p;
+
+    document.getElementById('riskIcon').textContent  = ICONS[p];
+    document.getElementById('riskLabel').textContent = data.label;
+    document.getElementById('riskConf').innerHTML =
+      'Model confidence: <strong>' + Math.round(data.confidence * 100) + '%</strong>';
+
+    // Probability bars (deferred for animation)
+    const probs = data.probabilities;
+    const keys  = ['No Diabetes', 'Pre-Diabetes', 'Diabetes'];
+    setTimeout(() => {
+      keys.forEach((k, i) => {
+        const pct = Math.round((probs[k] || 0) * 100);
+        document.getElementById('pct' + i).textContent = pct + '%';
+        document.getElementById('bar' + i).style.width  = pct + '%';
+      });
+    }, 100);
+
+    // Tip
+    const tip = document.getElementById('tipBox');
+    tip.textContent  = TIPS[p];
+    tip.className    = 'tip-box tip-' + p;
+
+    // Scroll to result on mobile
+    if (window.innerWidth < 900) {
+      document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+</script>
+</body>
+</html>
