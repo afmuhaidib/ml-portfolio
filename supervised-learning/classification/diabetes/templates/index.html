@@ -137,62 +137,34 @@
     margin-bottom: 14px;
   }
 
-  /* ── TOGGLES ── */
-  .toggle-grid {
+  /* ── NUMBER FIELDS ── */
+  .field-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
   }
-  .toggle-item { position: relative; }
-  .toggle-item input[type="checkbox"] { position: absolute; opacity: 0; width: 0; height: 0; }
-  .toggle-btn {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 16px;
+  .field-item { display: flex; flex-direction: column; gap: 5px; }
+  .field-item label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--muted);
+  }
+  .field-item input[type="number"] {
+    width: 100%;
+    padding: 11px 14px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--teal);
     background: var(--surface2);
     border: 1.5px solid var(--border);
     border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.2s;
-    user-select: none;
-    font-size: 0.85rem;
-    color: var(--muted);
-    font-weight: 500;
+    outline: none;
+    transition: border-color 0.2s;
+    text-align: center;
   }
-  .toggle-btn .pill {
-    width: 32px; height: 18px;
-    background: #d1d9d6;
-    border-radius: 9px;
-    position: relative;
-    flex-shrink: 0;
-    transition: background 0.2s;
-  }
-  .toggle-btn .pill::after {
-    content: '';
-    position: absolute;
-    width: 12px; height: 12px;
-    background: white;
-    border-radius: 50%;
-    top: 3px; left: 3px;
-    transition: transform 0.2s;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-  }
-  .toggle-item input:checked + .toggle-btn {
-    background: var(--cyan-dim);
-    border-color: var(--cyan);
-    color: var(--teal);
-  }
-  .toggle-item input:checked + .toggle-btn .pill { background: var(--cyan); }
-  .toggle-item input:checked + .toggle-btn .pill::after { transform: translateX(14px); }
-  .toggle-btn:hover { border-color: var(--teal2); }
-  .toggle-label { flex: 1; line-height: 1.3; }
-  .toggle-label .off-label,
-  .toggle-label .on-label  { display: block; font-size: 0.72rem; }
-  .toggle-label .off-label { display: block; }
-  .toggle-label .on-label  { display: none; color: var(--teal); }
-  .toggle-item input:checked + .toggle-btn .off-label { display: none; }
-  .toggle-item input:checked + .toggle-btn .on-label  { display: block; }
+  .field-item input[type="number"]:focus { border-color: var(--cyan); background: var(--cyan-dim); }
+  .field-hint { font-size: 0.68rem; color: var(--muted); text-align: center; }
 
   /* ── BMI INPUT ── */
   .bmi-wrap {
@@ -510,104 +482,46 @@
         </div>
         <div class="form-body">
           <div class="form-group">
-            <div class="group-label">Blood &amp; Heart Conditions</div>
-            <div class="toggle-grid">
-
-              <div class="toggle-item">
-                <input type="checkbox" id="HighBP" name="HighBP">
-                <label class="toggle-btn" for="HighBP">
-                  <span class="pill"></span>
-                  <span class="toggle-label">
-                    <span class="off-label">Blood Pressure Normal</span>
-                    <span class="on-label">High Blood Pressure</span>
-                  </span>
-                </label>
+            <div class="group-label">Blood &amp; Heart Conditions <span style="font-weight:400;text-transform:none;letter-spacing:0">(0 = No, 1 = Yes)</span></div>
+            <div class="field-grid">
+              <div class="field-item">
+                <label for="HighBP">High Blood Pressure</label>
+                <input type="number" id="HighBP" name="HighBP" min="0" max="1" step="1" value="0" required>
               </div>
-
-              <div class="toggle-item">
-                <input type="checkbox" id="HighChol" name="HighChol">
-                <label class="toggle-btn" for="HighChol">
-                  <span class="pill"></span>
-                  <span class="toggle-label">
-                    <span class="off-label">Cholesterol Normal</span>
-                    <span class="on-label">High Cholesterol</span>
-                  </span>
-                </label>
+              <div class="field-item">
+                <label for="HighChol">High Cholesterol</label>
+                <input type="number" id="HighChol" name="HighChol" min="0" max="1" step="1" value="0" required>
               </div>
-
-              <div class="toggle-item">
-                <input type="checkbox" id="Stroke" name="Stroke">
-                <label class="toggle-btn" for="Stroke">
-                  <span class="pill"></span>
-                  <span class="toggle-label">
-                    <span class="off-label">No Stroke History</span>
-                    <span class="on-label">Had Stroke</span>
-                  </span>
-                </label>
+              <div class="field-item">
+                <label for="Stroke">Stroke History</label>
+                <input type="number" id="Stroke" name="Stroke" min="0" max="1" step="1" value="0" required>
               </div>
-
-              <div class="toggle-item">
-                <input type="checkbox" id="HeartDiseaseorAttack" name="HeartDiseaseorAttack">
-                <label class="toggle-btn" for="HeartDiseaseorAttack">
-                  <span class="pill"></span>
-                  <span class="toggle-label">
-                    <span class="off-label">No Heart Disease</span>
-                    <span class="on-label">Heart Disease / Attack</span>
-                  </span>
-                </label>
+              <div class="field-item">
+                <label for="HeartDiseaseorAttack">Heart Disease / Attack</label>
+                <input type="number" id="HeartDiseaseorAttack" name="HeartDiseaseorAttack" min="0" max="1" step="1" value="0" required>
               </div>
-
             </div>
           </div>
 
           <div class="form-group">
-            <div class="group-label">Lifestyle Factors</div>
-            <div class="toggle-grid">
-
-              <div class="toggle-item">
-                <input type="checkbox" id="Smoker" name="Smoker">
-                <label class="toggle-btn" for="Smoker">
-                  <span class="pill"></span>
-                  <span class="toggle-label">
-                    <span class="off-label">Non-Smoker</span>
-                    <span class="on-label">Smoker</span>
-                  </span>
-                </label>
+            <div class="group-label">Lifestyle Factors <span style="font-weight:400;text-transform:none;letter-spacing:0">(0 = No, 1 = Yes)</span></div>
+            <div class="field-grid">
+              <div class="field-item">
+                <label for="Smoker">Smoker</label>
+                <input type="number" id="Smoker" name="Smoker" min="0" max="1" step="1" value="0" required>
               </div>
-
-              <div class="toggle-item">
-                <input type="checkbox" id="PhysActivity" name="PhysActivity">
-                <label class="toggle-btn" for="PhysActivity">
-                  <span class="pill"></span>
-                  <span class="toggle-label">
-                    <span class="off-label">Inactive</span>
-                    <span class="on-label">Physically Active</span>
-                  </span>
-                </label>
+              <div class="field-item">
+                <label for="PhysActivity">Physically Active</label>
+                <input type="number" id="PhysActivity" name="PhysActivity" min="0" max="1" step="1" value="0" required>
               </div>
-
-              <div class="toggle-item">
-                <input type="checkbox" id="HvyAlcoholConsump" name="HvyAlcoholConsump">
-                <label class="toggle-btn" for="HvyAlcoholConsump">
-                  <span class="pill"></span>
-                  <span class="toggle-label">
-                    <span class="off-label">Moderate / No Alcohol</span>
-                    <span class="on-label">Heavy Alcohol Use</span>
-                  </span>
-                </label>
+              <div class="field-item">
+                <label for="HvyAlcoholConsump">Heavy Alcohol Use</label>
+                <input type="number" id="HvyAlcoholConsump" name="HvyAlcoholConsump" min="0" max="1" step="1" value="0" required>
               </div>
-
-              <div class="toggle-item">
-                <input type="checkbox" id="DiffWalk" name="DiffWalk">
-                <label class="toggle-btn" for="DiffWalk">
-                  <span class="pill"></span>
-                  <span class="toggle-label">
-                    <span class="off-label">No Difficulty Walking</span>
-                    <span class="on-label">Difficulty Walking</span>
-                  </span>
-                </label>
+              <div class="field-item">
+                <label for="DiffWalk">Difficulty Walking</label>
+                <input type="number" id="DiffWalk" name="DiffWalk" min="0" max="1" step="1" value="0" required>
               </div>
-
             </div>
           </div>
 
@@ -640,17 +554,11 @@
 
           <!-- Sex -->
           <div class="form-group">
-            <div class="group-label">Biological Sex</div>
-            <div class="toggle-grid" style="grid-template-columns: 1fr 1fr;">
-              <div class="toggle-item">
-                <input type="checkbox" id="Sex" name="Sex">
-                <label class="toggle-btn" for="Sex">
-                  <span class="pill"></span>
-                  <span class="toggle-label">
-                    <span class="off-label">Female</span>
-                    <span class="on-label">Male</span>
-                  </span>
-                </label>
+            <div class="group-label">Gender <span style="font-weight:400;text-transform:none;letter-spacing:0">(0 = Female, 1 = Male)</span></div>
+            <div class="field-grid" style="grid-template-columns: 1fr 1fr;">
+              <div class="field-item">
+                <label for="Sex">Gender</label>
+                <input type="number" id="Sex" name="Sex" min="0" max="1" step="1" value="0" required>
               </div>
             </div>
           </div>
@@ -819,7 +727,7 @@
     const payload = {};
     ['HighBP','HighChol','Smoker','Stroke','HeartDiseaseorAttack',
      'PhysActivity','HvyAlcoholConsump','DiffWalk','Sex'].forEach(id => {
-      payload[id] = document.getElementById(id).checked ? 1 : 0;
+      payload[id] = parseInt(document.getElementById(id).value);
     });
     payload.BMI      = parseFloat(document.getElementById('BMI').value);
     payload.GenHlth  = parseInt(document.getElementById('GenHlth').value);
