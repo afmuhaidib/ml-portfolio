@@ -20,3 +20,4 @@ supervised-learning/regression/house-price/templates/
 supervised-learning/regression/house-worker/datasets/workers.csv
 supervised-learning/classification/health-lab/datasets/synthetic_patients.csv
 supervised-learning/classification/diabetes/model/diabetes-model.pkl
+supervised-learning/regression/house-worker/
