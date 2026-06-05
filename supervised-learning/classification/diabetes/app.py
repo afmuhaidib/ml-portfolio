@@ -7,8 +7,7 @@ app = Flask(__name__)
 bundle   = joblib.load('model/diabetes-model.pkl')
 model    = bundle['model']
 FEATURES = bundle['features']
-
-LABELS = {0: 'No Diabetes', 1: 'Pre-Diabetes', 2: 'Diabetes'}
+LABELS   = {0: 'No Diabetes', 1: 'Pre-Diabetes', 2: 'Diabetes'}
 
 
 @app.route('/')

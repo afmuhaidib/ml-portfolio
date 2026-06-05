@@ -481,38 +481,67 @@
           <h2>Cardiovascular &amp; Lifestyle</h2>
         </div>
         <div class="form-body">
+          <!-- Lab values -->
           <div class="form-group">
-            <div class="group-label">Blood &amp; Heart Conditions <span style="font-weight:400;text-transform:none;letter-spacing:0">(0 = No, 1 = Yes)</span></div>
+            <div class="group-label">Lab Results</div>
             <div class="field-grid">
               <div class="field-item">
-                <label for="HighBP">High Blood Pressure</label>
-                <input type="number" id="HighBP" name="HighBP" min="0" max="1" step="1" value="0" required>
+                <label for="Cholesterol">Total Cholesterol (mg/dL)</label>
+                <input type="number" id="Cholesterol" name="Cholesterol" min="100" max="400" step="1" value="190" placeholder="e.g. 190" required>
               </div>
               <div class="field-item">
-                <label for="HighChol">High Cholesterol</label>
-                <input type="number" id="HighChol" name="HighChol" min="0" max="1" step="1" value="0" required>
+                <label for="Glucose">Fasting Glucose (mg/dL)</label>
+                <input type="number" id="Glucose" name="Glucose" min="60" max="400" step="1" value="90" placeholder="e.g. 90" required>
+              </div>
+              <div class="field-item">
+                <label for="HbA1c">HbA1c (%)</label>
+                <input type="number" id="HbA1c" name="HbA1c" min="4" max="14" step="0.1" value="5.5" placeholder="e.g. 5.5" required>
+              </div>
+              <div class="field-item">
+                <label for="Insulin">Fasting Insulin (uIU/mL)</label>
+                <input type="number" id="Insulin" name="Insulin" min="2" max="300" step="0.1" value="12" placeholder="e.g. 12" required>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vitals -->
+          <div class="form-group">
+            <div class="group-label">Vitals</div>
+            <div class="field-grid">
+              <div class="field-item">
+                <label for="BloodPressure">Systolic BP (mmHg)</label>
+                <input type="number" id="BloodPressure" name="BloodPressure" min="80" max="220" step="1" value="120" placeholder="e.g. 120" required>
+              </div>
+              <div class="field-item">
+                <label for="BMI">BMI</label>
+                <input type="number" id="BMI" name="BMI" min="14" max="65" step="0.1" value="24.0" placeholder="e.g. 24.0" required>
+              </div>
+            </div>
+          </div>
+
+          <!-- Binary flags -->
+          <div class="form-group">
+            <div class="group-label">Risk Factors <span style="font-weight:400;text-transform:none;letter-spacing:0">(0 = No, 1 = Yes)</span></div>
+            <div class="field-grid">
+              <div class="field-item">
+                <label for="Hypertension">Hypertension</label>
+                <input type="number" id="Hypertension" name="Hypertension" min="0" max="1" step="1" value="0" required>
+              </div>
+              <div class="field-item">
+                <label for="HeartDisease">Heart Disease</label>
+                <input type="number" id="HeartDisease" name="HeartDisease" min="0" max="1" step="1" value="0" required>
               </div>
               <div class="field-item">
                 <label for="Stroke">Stroke History</label>
                 <input type="number" id="Stroke" name="Stroke" min="0" max="1" step="1" value="0" required>
               </div>
               <div class="field-item">
-                <label for="HeartDiseaseorAttack">Heart Disease / Attack</label>
-                <input type="number" id="HeartDiseaseorAttack" name="HeartDiseaseorAttack" min="0" max="1" step="1" value="0" required>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <div class="group-label">Lifestyle Factors <span style="font-weight:400;text-transform:none;letter-spacing:0">(0 = No, 1 = Yes)</span></div>
-            <div class="field-grid">
-              <div class="field-item">
                 <label for="Smoker">Smoker</label>
                 <input type="number" id="Smoker" name="Smoker" min="0" max="1" step="1" value="0" required>
               </div>
               <div class="field-item">
                 <label for="PhysActivity">Physically Active</label>
-                <input type="number" id="PhysActivity" name="PhysActivity" min="0" max="1" step="1" value="0" required>
+                <input type="number" id="PhysActivity" name="PhysActivity" min="0" max="1" step="1" value="1" required>
               </div>
               <div class="field-item">
                 <label for="HvyAlcoholConsump">Heavy Alcohol Use</label>
@@ -525,88 +554,47 @@
             </div>
           </div>
 
-          <!-- BMI -->
+          <!-- Survey health -->
           <div class="form-group">
-            <div class="group-label">Body Mass Index (BMI)</div>
-            <div class="bmi-wrap">
-              <input type="number" class="bmi-input" id="BMI" name="BMI"
-                     min="10" max="60" step="0.1" value="24.0" required>
-              <div class="bmi-scale">
-                <div class="bmi-bar-wrap">
-                  <div class="bmi-cursor" id="bmiCursor"></div>
-                </div>
-                <div class="bmi-labels">
-                  <span>10</span><span>Underweight</span><span>Normal</span><span>Obese</span><span>60</span>
-                </div>
+            <div class="group-label">Lifestyle & Health Ratings</div>
+            <div class="field-grid">
+              <div class="field-item">
+                <label for="GenHlth">General Health <span style="font-weight:400">(1=Excellent, 5=Poor)</span></label>
+                <input type="number" id="GenHlth" name="GenHlth" min="1" max="5" step="1" value="3" required>
+              </div>
+              <div class="field-item">
+                <label for="MentHlth">Poor Mental Health Days <span style="font-weight:400">(0–30)</span></label>
+                <input type="number" id="MentHlth" name="MentHlth" min="0" max="30" step="1" value="0" required>
+              </div>
+              <div class="field-item">
+                <label for="PhysHlth">Poor Physical Health Days <span style="font-weight:400">(0–30)</span></label>
+                <input type="number" id="PhysHlth" name="PhysHlth" min="0" max="30" step="1" value="0" required>
               </div>
             </div>
           </div>
+
         </div>
       </div>
 
-      <!-- DEMOGRAPHICS & HEALTH -->
+      <!-- DEMOGRAPHICS -->
       <div class="form-card" style="margin-top: 20px;">
         <div class="section-header">
           <span class="dot"></span>
-          <h2>Demographics &amp; General Health</h2>
+          <h2>Demographics</h2>
         </div>
         <div class="form-body">
-
-          <!-- Sex -->
           <div class="form-group">
-            <div class="group-label">Gender <span style="font-weight:400;text-transform:none;letter-spacing:0">(0 = Female, 1 = Male)</span></div>
-            <div class="field-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="field-grid">
               <div class="field-item">
-                <label for="Sex">Gender</label>
-                <input type="number" id="Sex" name="Sex" min="0" max="1" step="1" value="0" required>
+                <label for="Gender">Gender <span style="font-weight:400">(0=Female, 1=Male)</span></label>
+                <input type="number" id="Gender" name="Gender" min="0" max="1" step="1" value="0" required>
+              </div>
+              <div class="field-item">
+                <label for="Age">Age (years)</label>
+                <input type="number" id="Age" name="Age" min="18" max="90" step="1" value="35" placeholder="e.g. 35" required>
               </div>
             </div>
           </div>
-
-          <!-- Age Slider -->
-          <div class="form-group">
-            <div class="group-label">Age Group</div>
-            <div class="slider-wrap">
-              <div class="slider-meta">
-                <span class="slider-name">Age Range</span>
-                <span class="slider-val" id="ageVal">50–54</span>
-              </div>
-              <div class="slider-row">
-                <input type="range" id="Age" name="Age" min="1" max="13" value="7">
-              </div>
-            </div>
-          </div>
-
-          <!-- General Health Slider -->
-          <div class="form-group">
-            <div class="group-label">Subjective Health Ratings</div>
-            <div class="slider-wrap">
-              <div class="slider-meta">
-                <span class="slider-name">General Health</span>
-                <span class="slider-val" id="genHlthVal">Good</span>
-              </div>
-              <div class="slider-row">
-                <input type="range" id="GenHlth" name="GenHlth" min="1" max="5" value="3">
-              </div>
-
-              <div class="slider-meta" style="margin-top: 10px;">
-                <span class="slider-name">Poor Mental Health Days <span style="color:var(--muted);font-weight:400">(past month)</span></span>
-                <span class="slider-val" id="mentHlthVal">0 days</span>
-              </div>
-              <div class="slider-row">
-                <input type="range" id="MentHlth" name="MentHlth" min="0" max="30" value="0">
-              </div>
-
-              <div class="slider-meta" style="margin-top: 10px;">
-                <span class="slider-name">Poor Physical Health Days <span style="color:var(--muted);font-weight:400">(past month)</span></span>
-                <span class="slider-val" id="physHlthVal">0 days</span>
-              </div>
-              <div class="slider-row">
-                <input type="range" id="PhysHlth" name="PhysHlth" min="0" max="30" value="0">
-              </div>
-            </div>
-          </div>
-
         </div>
         <div class="submit-row">
           <button type="submit" class="btn-predict" id="submitBtn">
@@ -669,7 +657,7 @@
       </div>
       <div class="stat-row">
         <span class="stat-name">Features</span>
-        <span class="stat-val">14 biomarkers</span>
+        <span class="stat-val">19 features</span>
       </div>
       <div class="stat-row">
         <span class="stat-name">Classes</span>
@@ -684,38 +672,12 @@
 </div>
 
 <script>
-  const AGE_LABELS = {
-    1:'18–24', 2:'25–29', 3:'30–34', 4:'35–39',
-    5:'40–44', 6:'45–49', 7:'50–54', 8:'55–59',
-    9:'60–64', 10:'65–69', 11:'70–74', 12:'75–79', 13:'80+'
-  };
-  const GEN_LABELS = {1:'Excellent',2:'Very Good',3:'Good',4:'Fair',5:'Poor'};
-
   const TIPS = {
     0: "Great news — your profile shows low diabetes risk. Maintain your healthy habits: stay active, eat balanced meals, and schedule regular check-ups.",
     1: "Your profile suggests pre-diabetes risk. Small lifestyle changes can make a big difference — regular exercise, reduced sugar intake, and weight management can reverse pre-diabetes.",
     2: "Your profile indicates elevated diabetes risk. We strongly recommend consulting a healthcare professional for proper screening and personalized guidance."
   };
   const ICONS = { 0: '✓', 1: '⚠', 2: '!' };
-
-  // Slider live updates
-  document.getElementById('Age').addEventListener('input', e =>
-    document.getElementById('ageVal').textContent = AGE_LABELS[e.target.value]);
-  document.getElementById('GenHlth').addEventListener('input', e =>
-    document.getElementById('genHlthVal').textContent = GEN_LABELS[e.target.value]);
-  document.getElementById('MentHlth').addEventListener('input', e =>
-    document.getElementById('mentHlthVal').textContent = e.target.value + ' days');
-  document.getElementById('PhysHlth').addEventListener('input', e =>
-    document.getElementById('physHlthVal').textContent = e.target.value + ' days');
-
-  // BMI cursor
-  function updateBMI() {
-    const val = parseFloat(document.getElementById('BMI').value) || 24;
-    const pct = Math.max(0, Math.min(100, (val - 10) / 50 * 100));
-    document.getElementById('bmiCursor').style.left = pct + '%';
-  }
-  document.getElementById('BMI').addEventListener('input', updateBMI);
-  updateBMI();
 
   // Form submit
   document.getElementById('riskForm').addEventListener('submit', async e => {
@@ -724,16 +686,13 @@
     btn.classList.add('loading');
     btn.disabled = true;
 
+    const intFields   = ['Gender','Age','Cholesterol','BloodPressure','Smoker',
+                         'Hypertension','HeartDisease','Stroke','PhysActivity',
+                         'HvyAlcoholConsump','DiffWalk','GenHlth','MentHlth','PhysHlth'];
+    const floatFields = ['BMI','Glucose','HbA1c','Insulin'];
     const payload = {};
-    ['HighBP','HighChol','Smoker','Stroke','HeartDiseaseorAttack',
-     'PhysActivity','HvyAlcoholConsump','DiffWalk','Sex'].forEach(id => {
-      payload[id] = parseInt(document.getElementById(id).value);
-    });
-    payload.BMI      = parseFloat(document.getElementById('BMI').value);
-    payload.GenHlth  = parseInt(document.getElementById('GenHlth').value);
-    payload.MentHlth = parseInt(document.getElementById('MentHlth').value);
-    payload.PhysHlth = parseInt(document.getElementById('PhysHlth').value);
-    payload.Age      = parseInt(document.getElementById('Age').value);
+    intFields.forEach(id   => payload[id] = parseInt(document.getElementById(id).value));
+    floatFields.forEach(id => payload[id] = parseFloat(document.getElementById(id).value));
 
     try {
       const res  = await fetch('/predict', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
