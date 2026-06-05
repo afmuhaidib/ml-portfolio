@@ -29,6 +29,3 @@ A growing collection of machine learning projects spanning supervised and unsupe
 |---|---|
 | [Customer Segmentation](https://github.com/afmuhaidib/ml-portfolio/tree/main/core/unsupervised) | Segments 10 M customers into 4 clusters using KMeans — includes cluster zone visualization |
 
----
-
-Built by Abdullah · assisted by [Claude Code](https://claude.ai/code)
