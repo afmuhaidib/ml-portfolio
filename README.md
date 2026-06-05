@@ -20,7 +20,6 @@ A growing collection of machine learning projects spanning supervised and unsupe
 | Project | Description |
 |---|---|
 | [House Price](https://github.com/afmuhaidib/ml-portfolio/tree/main/supervised-learning/regression/house-price) | Predicts house prices from property features — includes a Flask web app |
-| [Worker Arrival](https://github.com/afmuhaidib/ml-portfolio/tree/main/supervised-learning/regression/house-worker) | Predicts when a worker will arrive — includes a Flask web app |
 
 ### Unsupervised Learning — Clustering
 
